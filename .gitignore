@@ -1,0 +1,10 @@
+# Binaries
+/cliamp-rpcd
+*.exe
+*.test
+
+# Editors and OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
