@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"os/signal"
@@ -16,6 +17,7 @@ import (
 	"time"
 
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampdir"
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampstate"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampsub"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/discord"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/presence"
@@ -26,6 +28,11 @@ const topic = "plugin.dc-rpc.playback"
 
 // retryEvery is how often a failed Discord update is retried.
 const retryEvery = 5 * time.Second
+
+// heartbeatEvery is how often the shown card is re-sent. Discord restarts
+// drop the pipe silently, and the reconnect only happens on a write. Discord
+// limits activity updates to 5 per 20 s, so this stays far below that.
+const heartbeatEvery = 15 * time.Second
 
 // orphanAfter is how long cliamp may stay unreachable before the daemon exits.
 // The daemon only outlives cliamp when cliamp died without stopping its plugins.
@@ -57,6 +64,7 @@ func main() {
 	d := newDiscordSink(defaultClientID)
 	go d.run(ctx)
 
+	cover := &coverLookup{sock: *sock}
 	cliampsub.Run(ctx, *sock, topic, cliampsub.Handlers{
 		Data: func(raw json.RawMessage) {
 			var snap presence.Snapshot
@@ -64,6 +72,7 @@ func main() {
 				log.Printf("bad playback snapshot: %v", err)
 				return
 			}
+			cover.fill(&snap)
 			d.set(presence.Activity(snap, time.Now()))
 		},
 		Down: func(err error) {
@@ -76,6 +85,40 @@ func main() {
 	})
 }
 
+// coverLookup supplies the cover for playback snapshots that carry none. The
+// playback event has no cover URL, but cliamp's state.get does for the playing
+// track. It asks once per track, so seeks and heartbeats never reach the socket.
+type coverLookup struct {
+	sock string
+	key  string // title, artist and duration of the track last looked up
+	url  string // cover of that track, "" when it has none
+}
+
+// fill sets snap.Image from cliamp when the snapshot has no cover. A lookup
+// that fails keeps the fallback until the track changes.
+func (c *coverLookup) fill(snap *presence.Snapshot) {
+	if snap.Image != "" || snap.Title == "" {
+		return
+	}
+	key := fmt.Sprintf("%s\x00%s\x00%g", snap.Title, snap.Artist, snap.Duration)
+	if key != c.key {
+		c.key = key
+		c.url = ""
+		t, err := cliampstate.Current(c.sock)
+		switch {
+		case err != nil:
+			log.Printf("cover lookup: %v", err)
+		case t.Title != snap.Title || t.Artist != snap.Artist:
+			// cliamp moved on to another track; the next event looks up again.
+			c.key = ""
+			return
+		default:
+			c.url = t.Cover
+		}
+	}
+	snap.Image = c.url
+}
+
 // discordSink keeps the latest wanted activity and pushes it to Discord. A
 // failed push is retried every retryEvery, so a Discord restart is recovered
 // without waiting for the next track event.
@@ -86,6 +129,7 @@ type discordSink struct {
 	mu     sync.Mutex
 	want   *discord.Activity
 	dirty  bool
+	pushed time.Time // last successful SET_ACTIVITY
 	client *discord.Client
 }
 
@@ -145,7 +189,11 @@ func (d *discordSink) awaitQuiet(ctx context.Context) bool {
 
 func (d *discordSink) flush() {
 	d.mu.Lock()
-	if !d.dirty {
+	// A card that is already shown is re-sent every heartbeatEvery. Discord
+	// closes its pipe on restart without telling the daemon; only a write
+	// reveals that, so an unchanged card still has to be written.
+	due := d.dirty || (d.want != nil && time.Since(d.pushed) >= heartbeatEvery)
+	if !due {
 		d.mu.Unlock()
 		return
 	}
@@ -154,9 +202,13 @@ func (d *discordSink) flush() {
 
 	if err := d.push(a); err != nil {
 		log.Printf("discord: %v (retrying)", err)
+		d.mu.Lock()
+		d.dirty = true
+		d.mu.Unlock()
 		return
 	}
 	d.mu.Lock()
+	d.pushed = time.Now()
 	// Only clear dirty if no newer activity arrived during the push.
 	if d.want == a {
 		d.dirty = false
