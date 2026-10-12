@@ -17,9 +17,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/4irF1ux/dc-rpc/internal/cliampsub"
-	"github.com/4irF1ux/dc-rpc/internal/discord"
-	"github.com/4irF1ux/dc-rpc/internal/presence"
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampsub"
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/discord"
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/presence"
 )
 
 // topic is "plugin.<plugin file name>.<published name>" (docs/plugins.md).

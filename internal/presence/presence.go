@@ -4,7 +4,7 @@ package presence
 import (
 	"time"
 
-	"github.com/4irF1ux/dc-rpc/internal/discord"
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/discord"
 )
 
 // FallbackAsset is the key of the Rich Presence art asset uploaded in the
