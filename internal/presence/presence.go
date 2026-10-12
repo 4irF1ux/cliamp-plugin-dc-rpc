@@ -7,6 +7,10 @@ import (
 	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/discord"
 )
 
+// FallbackAsset is the key of the Rich Presence art asset uploaded in the
+// Discord developer portal. It is shown when the track has no public cover.
+const FallbackAsset = "cliamp"
+
 // maxField is Discord's limit for details and state. Longer values are cut.
 const maxField = 128
 
@@ -33,10 +37,11 @@ func Activity(s Snapshot, now time.Time) *discord.Activity {
 	if s.Duration > 0 {
 		ts.End = start.Add(seconds(s.Duration)).Unix()
 	}
-	var assets *discord.Assets
-	if s.Image != "" {
-		assets = &discord.Assets{LargeImage: s.Image}
+	large := s.Image
+	if large == "" {
+		large = FallbackAsset
 	}
+	assets := &discord.Assets{LargeImage: large}
 	return &discord.Activity{
 		Type:       discord.TypeListening,
 		Details:    clip(s.Title),

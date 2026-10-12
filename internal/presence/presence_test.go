@@ -56,14 +56,14 @@ func TestUnknownDurationOmitsEnd(t *testing.T) {
 	}
 }
 
-func TestCoverArtIsLargeImageOnlyWhenPresent(t *testing.T) {
+func TestCoverArtOrFallbackIsLargeImage(t *testing.T) {
 	with := Snapshot{Status: "playing", Title: "Song", Image: "https://example.com/cover.jpg"}
 	if a := Activity(with, now); a == nil || a.Assets == nil || a.Assets.LargeImage != with.Image {
 		t.Fatalf("activity = %+v, want large_image %q", a, with.Image)
 	}
 	without := Snapshot{Status: "playing", Title: "Song"}
-	if a := Activity(without, now); a == nil || a.Assets != nil {
-		t.Fatalf("activity = %+v, want no assets", a)
+	if a := Activity(without, now); a == nil || a.Assets == nil || a.Assets.LargeImage != FallbackAsset {
+		t.Fatalf("activity = %+v, want fallback large_image %q", a, FallbackAsset)
 	}
 }
 

@@ -50,8 +50,8 @@ type Activity struct {
 	Assets     *Assets     `json:"assets,omitempty"`
 }
 
-// Assets are the images shown on the card. LargeImage is a public https URL
-// that Discord fetches itself.
+// Assets are the images shown on the card. LargeImage is either a public https
+// URL that Discord fetches itself or the key of an app art asset.
 type Assets struct {
 	LargeImage string `json:"large_image,omitempty"`
 }
