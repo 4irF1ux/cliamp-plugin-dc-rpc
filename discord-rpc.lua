@@ -20,6 +20,15 @@ local function emit(snap)
     p:publish("playback", snap, { retain = true })
 end
 
+-- Discord can only fetch public https images. cliamp's embedded-art paths are
+-- file:// URLs on this machine, so they never leave the plugin.
+local function public_https(url)
+    if type(url) == "string" and url:sub(1, 8) == "https://" then
+        return url
+    end
+    return nil
+end
+
 local function on_state(e)
     local stream = e.stream == true
     local hide = stream and not show_stream
@@ -28,6 +37,7 @@ local function on_state(e)
         title = (not hide) and e.title or nil,
         artist = (not hide) and e.artist or nil,
         album = (not hide) and e.album or nil,
+        image = (not hide) and public_https(e.album_art_url) or nil,
         duration = e.duration,
         position = e.position,
     }
@@ -40,6 +50,7 @@ local function on_state(e)
         tostring(snap.artist),
         tostring(snap.album),
         tostring(snap.duration),
+        tostring(snap.image),
     }, "\0")
 
     if force or key ~= last_key then

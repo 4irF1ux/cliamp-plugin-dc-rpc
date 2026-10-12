@@ -47,6 +47,13 @@ type Activity struct {
 	Details    string      `json:"details,omitempty"`
 	State      string      `json:"state,omitempty"`
 	Timestamps *Timestamps `json:"timestamps,omitempty"`
+	Assets     *Assets     `json:"assets,omitempty"`
+}
+
+// Assets are the images shown on the card. LargeImage is a public https URL
+// that Discord fetches itself.
+type Assets struct {
+	LargeImage string `json:"large_image,omitempty"`
 }
 
 // TypeListening is the Activity.Type for "Listening to".

@@ -15,6 +15,7 @@ type Snapshot struct {
 	Status   string  `json:"status"`
 	Title    string  `json:"title"`
 	Artist   string  `json:"artist"`
+	Image    string  `json:"image"`
 	Duration float64 `json:"duration"`
 	Position float64 `json:"position"`
 }
@@ -32,11 +33,16 @@ func Activity(s Snapshot, now time.Time) *discord.Activity {
 	if s.Duration > 0 {
 		ts.End = start.Add(seconds(s.Duration)).Unix()
 	}
+	var assets *discord.Assets
+	if s.Image != "" {
+		assets = &discord.Assets{LargeImage: s.Image}
+	}
 	return &discord.Activity{
 		Type:       discord.TypeListening,
 		Details:    clip(s.Title),
 		State:      clip(s.Artist),
 		Timestamps: ts,
+		Assets:     assets,
 	}
 }
 
