@@ -27,16 +27,7 @@ Requisitos: cliamp con plugins, Discord abierto en la misma máquina y Go 1.22 o
 
    En Windows, el binario se llama `cliamp-rpcd.exe`.
 
-3. Permití el binario en `config.toml`. Se suma a los que ya trae cliamp:
-
-   ```toml
-   [plugins]
-   allowed_binaries = "cliamp-rpcd"
-   ```
-
-   Sin esta línea el plugin carga, pero el daemon no arranca y no hay tarjeta.
-
-4. Reiniciá cliamp.
+3. Reiniciá cliamp.
 
 Hoy el daemon se arranca a mano (`cliamp-rpcd`). El plugin todavía no lo lanza.
 
@@ -56,7 +47,7 @@ show_stream = true # false oculta título y artista en streams (radios, etc.)
 cliamp plugins remove dc-rpc
 ```
 
-Esto quita el plugin. El binario `cliamp-rpcd` y la línea de `allowed_binaries` quedan; borralos a mano si no los usás.
+Esto quita el plugin. El binario `cliamp-rpcd` queda; borralo a mano si no lo usás.
 
 ## Cómo funciona el daemon
 
