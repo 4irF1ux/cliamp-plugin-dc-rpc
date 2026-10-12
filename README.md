@@ -15,32 +15,27 @@ It has two parts:
 
 ## Installation
 
-1. Copy `dc-rpc.lua` into cliamp's `plugins` folder and trust it:
+Install the plugin and the daemon:
 
-   ```sh
-   cliamp plugins trust dc-rpc
-   ```
+```sh
+cliamp plugins install 4irF1ux/cliamp-plugin-dc-rpc
+go install github.com/4irF1ux/cliamp-plugin-dc-rpc/cmd/cliamp-rpcd@latest
+```
 
-2. Build the daemon and put it in a folder on your `PATH`:
+`cliamp plugins install` asks you to trust the plugin, which declares `exec` because it starts the daemon. Answer yes.
 
-   ```sh
-   git clone https://github.com/4irF1ux/cliamp-plugin-dc-rpc
-   cd cliamp-plugin-dc-rpc
-   go build -o cliamp-rpcd ./cmd/cliamp-rpcd
-   ```
+`go install` puts `cliamp-rpcd` in Go's bin folder (`go env GOPATH`, then `bin`; on Windows usually `%USERPROFILE%\go\bin`). That folder must be on your `PATH`.
 
-   On Windows the binary is `cliamp-rpcd.exe`.
+Allow cliamp to run the daemon. Add it to `allowed_binaries` under `[plugins]` in cliamp's `config.toml`. The default list is kept; this adds to it:
 
-3. Allow cliamp to run the daemon. Add it to `allowed_binaries` under `[plugins]` in cliamp's `config.toml`. The default list is kept; this adds to it:
+```toml
+[plugins]
+allowed_binaries = "cliamp-rpcd"
+```
 
-   ```toml
-   [plugins]
-   allowed_binaries = "cliamp-rpcd"
-   ```
+Restart cliamp and play something. The daemon starts with cliamp and the card appears in Discord.
 
-4. Restart cliamp and play something. The daemon starts with cliamp and the card appears in Discord.
-
-If the daemon cannot start, cliamp's log says why (usually step 2 or 3 is missing).
+If the daemon cannot start, cliamp's log says why (usually the `PATH` or `allowed_binaries` step is missing).
 
 ## Configuration
 
