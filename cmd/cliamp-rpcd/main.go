@@ -7,16 +7,15 @@ package main
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
-	"runtime"
 	"sync"
 	"time"
 
+	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampdir"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/cliampsub"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/discord"
 	"github.com/4irF1ux/cliamp-plugin-dc-rpc/internal/presence"
@@ -187,26 +186,12 @@ func (d *discordSink) close() {
 	}
 }
 
-// defaultSocket mirrors cliamp's appdir.Dir lookup order so the daemon finds
-// the same socket without importing cliamp's internal packages.
+// defaultSocket returns cliamp.sock in cliamp's config directory, so the
+// daemon finds the same socket as cliamp without importing its packages.
 func defaultSocket() (string, error) {
-	if dir := os.Getenv("CLIAMP_CONFIG_DIR"); dir != "" {
-		return filepath.Join(dir, "cliamp.sock"), nil
-	}
-	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, "cliamp", "cliamp.sock"), nil
-	}
-	if home := os.Getenv("HOME"); home != "" {
-		return filepath.Join(home, ".config", "cliamp", "cliamp.sock"), nil
-	}
-	if runtime.GOOS == "windows" {
-		if appData := os.Getenv("APPDATA"); appData != "" {
-			return filepath.Join(appData, "cliamp", "cliamp.sock"), nil
-		}
-	}
-	home, err := os.UserHomeDir()
+	dir, err := cliampdir.Dir()
 	if err != nil {
-		return "", errors.Join(errors.New("no config dir"), err)
+		return "", err
 	}
-	return filepath.Join(home, ".config", "cliamp", "cliamp.sock"), nil
+	return filepath.Join(dir, "cliamp.sock"), nil
 }
