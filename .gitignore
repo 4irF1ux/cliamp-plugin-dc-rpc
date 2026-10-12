@@ -3,7 +3,8 @@
 /discord-spike
 *.exe
 *.test
-
+# Local notes, never published
+/docs/
 # Editors and OS
 .idea/
 .vscode/
