@@ -4,7 +4,7 @@ package presence
 import (
 	"time"
 
-	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/discord"
+	"github.com/4irF1ux/dc-rpc/internal/discord"
 )
 
 // FallbackAsset is the key of the Rich Presence art asset uploaded in the
@@ -14,7 +14,7 @@ const FallbackAsset = "cliamp"
 // maxField is Discord's limit for details and state. Longer values are cut.
 const maxField = 128
 
-// Snapshot is the playback state published by discord-rpc.lua.
+// Snapshot is the playback state published by dc-rpc.lua.
 type Snapshot struct {
 	Status   string  `json:"status"`
 	Title    string  `json:"title"`

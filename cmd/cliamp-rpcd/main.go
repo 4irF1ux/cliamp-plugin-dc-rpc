@@ -1,6 +1,6 @@
 // Command cliamp-rpcd shows cliamp playback as Discord Rich Presence.
 //
-// It subscribes to the "playback" snapshots that discord-rpc.lua publishes on
+// It subscribes to the "playback" snapshots that dc-rpc.lua publishes on
 // cliamp's IPC socket and mirrors them to the local Discord client.
 package main
 
@@ -17,13 +17,13 @@ import (
 	"sync"
 	"time"
 
-	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/cliampsub"
-	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/discord"
-	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/presence"
+	"github.com/4irF1ux/dc-rpc/internal/cliampsub"
+	"github.com/4irF1ux/dc-rpc/internal/discord"
+	"github.com/4irF1ux/dc-rpc/internal/presence"
 )
 
 // topic is "plugin.<plugin file name>.<published name>" (docs/plugins.md).
-const topic = "plugin.discord-rpc.playback"
+const topic = "plugin.dc-rpc.playback"
 
 // retryEvery is how often a failed Discord update is retried.
 const retryEvery = 5 * time.Second

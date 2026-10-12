@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/4irF1ux/cliamp-plugin-discord-rpc/internal/discord"
+	"github.com/4irF1ux/dc-rpc/internal/discord"
 )
 
 var now = time.Unix(1_800_000_000, 0)

@@ -1,5 +1,5 @@
 local p = plugin.register({
-    name = "discord-rpc",
+    name = "dc-rpc",
     type = "hook",
     version = "0.1.0",
     description = "Publishes playback snapshots on cliamp.sock for the Discord RPC daemon",

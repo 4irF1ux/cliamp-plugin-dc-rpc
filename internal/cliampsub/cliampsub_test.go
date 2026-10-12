@@ -48,10 +48,10 @@ func fakeCliamp(t *testing.T, ack string, events ...string) (sock string, reques
 }
 
 func TestRunDeliversOnlyTopicPayloads(t *testing.T) {
-	const topic = "plugin.discord-rpc.playback"
+	const topic = "plugin.dc-rpc.playback"
 	sock, requested := fakeCliamp(t, `{"version":2,"id":"events","ok":true}`,
 		`{"event":"plugin.other.playback","seq":1,"time":1,"data":{"title":"wrong"}}`,
-		`{"event":"plugin.discord-rpc.playback","seq":2,"time":2,"retained":true,"data":{"title":"right"}}`,
+		`{"event":"plugin.dc-rpc.playback","seq":2,"time":2,"retained":true,"data":{"title":"right"}}`,
 	)
 
 	got := make(chan string, 1)

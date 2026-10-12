@@ -1,3 +1,3 @@
-module github.com/4irF1ux/cliamp-plugin-discord-rpc
+module github.com/4irF1ux/dc-rpc
 
 go 1.22
