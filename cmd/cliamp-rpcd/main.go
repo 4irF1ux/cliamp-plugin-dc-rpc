@@ -33,12 +33,16 @@ const retryEvery = 5 * time.Second
 // Discord's update limits, so only the settled state is sent.
 const settleAfter = time.Second
 
+// defaultClientID is the project's Discord application. Its "cliamp" art asset
+// is the fallback image for tracks without a cover.
+const defaultClientID = "1558987895333724210"
+
 func main() {
-	clientID := flag.String("client-id", "", "Discord application ID (required)")
+	clientID := flag.String("client-id", defaultClientID, "Discord application ID")
 	sock := flag.String("sock", "", "cliamp IPC socket (default: cliamp's config dir)")
 	flag.Parse()
 	if *clientID == "" {
-		log.Fatal("-client-id is required")
+		log.Fatal("-client-id must not be empty")
 	}
 	if *sock == "" {
 		p, err := defaultSocket()
