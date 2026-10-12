@@ -1,5 +1,6 @@
 # Binaries
 /cliamp-rpcd
+/discord-spike
 *.exe
 *.test
 
