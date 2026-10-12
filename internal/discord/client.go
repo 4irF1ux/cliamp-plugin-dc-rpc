@@ -89,8 +89,8 @@ func (c *Client) SetActivity(a *Activity) (json.RawMessage, error) {
 	return c.awaitReply(strconv.Itoa(c.nonce))
 }
 
-// Close closes the connection. Whether Discord clears the presence once the
-// connection drops is not verified yet (open question in docs/plan.md).
+// Close closes the connection. Discord removes the presence once the
+// connection drops; verified on Windows, see docs/plan.md.
 func (c *Client) Close() error {
 	return c.conn.Close()
 }
