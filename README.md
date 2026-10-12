@@ -15,24 +15,19 @@ It has two parts:
 
 ## Installation
 
-One line, in cmd, bash, or PowerShell 7+. In Windows PowerShell 5, use `;` instead of `&&`:
+One line, in cmd, bash, or PowerShell:
 
 ```sh
-cliamp plugins install 4irF1ux/cliamp-plugin-dc-rpc && go install github.com/4irF1ux/cliamp-plugin-dc-rpc/cmd/cliamp-rpcd@latest
+go run github.com/4irF1ux/cliamp-plugin-dc-rpc/cmd/install@latest
 ```
 
-What each part does, so you know before you run it:
+The installer needs `go` and `cliamp` on your `PATH`. It does three things:
 
-1. `cliamp plugins install` downloads one file, `dc-rpc.lua`, into cliamp's `plugins` folder. It asks you to trust it: the plugin declares `exec` because it starts the daemon.
-2. `go install` downloads this repo's source and compiles `cliamp-rpcd` on your machine into Go's bin folder (on Windows usually `%USERPROFILE%\go\bin`). No prebuilt binary is downloaded. That folder must be on your `PATH`.
-3. Allow cliamp to run the daemon by adding it to `allowed_binaries` under `[plugins]` in cliamp's `config.toml`. The default list is kept; this adds to it:
+1. Installs `dc-rpc.lua` into cliamp's `plugins` folder with `cliamp plugins install`. cliamp asks you to trust it: the plugin declares `exec` because it starts the daemon. If an older copy is there, it is replaced.
+2. Compiles `cliamp-rpcd` with `go install` into Go's bin folder (`GOBIN`, or `%USERPROFILE%\go\bin` on Windows). No prebuilt binary is downloaded. That folder must be on your `PATH`.
+3. Adds `cliamp-rpcd` to `allowed_binaries` under `[plugins]` in cliamp's `config.toml`, keeping any existing entries. Before changing the file it writes `config.toml.bak`.
 
-```toml
-[plugins]
-allowed_binaries = "cliamp-rpcd"
-```
-
-Restart cliamp and play something. The daemon starts with cliamp and the card appears in Discord.
+Then restart cliamp and play something. The daemon starts with cliamp and the card appears in Discord.
 
 What leaves your machine: the card data goes to Discord through your local Discord app, as any Rich Presence does. The plugin makes no network requests of its own. The daemon connects only to cliamp's local socket and to Discord's local IPC pipe. If the track has a public `https` cover, Discord fetches that image, not the plugin.
 
