@@ -5,9 +5,9 @@ local p = plugin.register({
     description = "Publishes playback snapshots on cliamp.sock for the Discord RPC daemon",
 })
 
--- p:config returns strings or nil. Defaults: enabled on, show_stream off.
+-- p:config returns strings or nil. Defaults: enabled on, show_stream on.
 local enabled = p:config("enabled") ~= "false"
-local show_stream = p:config("show_stream") == "true"
+local show_stream = p:config("show_stream") ~= "false"
 
 local last_key = nil   -- identity of the last published snapshot, position excluded
 local last_snap = nil -- most recent snapshot, kept so seeks can republish with a new position
