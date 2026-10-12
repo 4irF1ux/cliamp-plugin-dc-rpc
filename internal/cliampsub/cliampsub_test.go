@@ -116,3 +116,19 @@ func TestRejectedSubscribeReportsDown(t *testing.T) {
 		t.Fatal("Down not called")
 	}
 }
+
+func TestRunGivesUpWhenCliampStaysUnreachable(t *testing.T) {
+	// Nothing listens on sock, so every attempt fails and Run must return once
+	// GiveUpAfter has passed, instead of retrying forever.
+	sock := filepath.Join(t.TempDir(), "gone.sock")
+	done := make(chan struct{})
+	go func() {
+		Run(context.Background(), sock, "plugin.x.y", Handlers{GiveUpAfter: 300 * time.Millisecond})
+		close(done)
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		t.Fatal("Run kept retrying after cliamp stayed unreachable")
+	}
+}

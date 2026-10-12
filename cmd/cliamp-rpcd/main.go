@@ -28,6 +28,10 @@ const topic = "plugin.discord-rpc.playback"
 // retryEvery is how often a failed Discord update is retried.
 const retryEvery = 5 * time.Second
 
+// orphanAfter is how long cliamp may stay unreachable before the daemon exits.
+// The daemon only outlives cliamp when cliamp died without stopping its plugins.
+const orphanAfter = time.Minute
+
 // settleAfter is how long activity must stay unchanged before it is pushed.
 // A held seek key sends an update per repeat; pushing each one can exceed
 // Discord's update limits, so only the settled state is sent.
@@ -38,12 +42,8 @@ const settleAfter = time.Second
 const defaultClientID = "1558987895333724210"
 
 func main() {
-	clientID := flag.String("client-id", defaultClientID, "Discord application ID")
 	sock := flag.String("sock", "", "cliamp IPC socket (default: cliamp's config dir)")
 	flag.Parse()
-	if *clientID == "" {
-		log.Fatal("-client-id must not be empty")
-	}
 	if *sock == "" {
 		p, err := defaultSocket()
 		if err != nil {
@@ -55,7 +55,7 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	d := newDiscordSink(*clientID)
+	d := newDiscordSink(defaultClientID)
 	go d.run(ctx)
 
 	cliampsub.Run(ctx, *sock, topic, cliampsub.Handlers{
@@ -73,6 +73,7 @@ func main() {
 			log.Printf("cliamp socket down: %v", err)
 			d.set(nil)
 		},
+		GiveUpAfter: orphanAfter,
 	})
 }
 

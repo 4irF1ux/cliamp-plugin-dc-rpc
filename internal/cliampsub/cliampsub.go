@@ -32,6 +32,10 @@ type Handlers struct {
 	// called before every retry, so the caller can clear state it derived from
 	// the stream.
 	Down func(err error)
+	// GiveUpAfter ends Run when cliamp has not been reachable for this long,
+	// counted from the last acked subscription or from Run's start. Zero retries
+	// forever.
+	GiveUpAfter time.Duration
 }
 
 type envelope struct {
@@ -44,24 +48,36 @@ type ack struct {
 	Error string `json:"error"`
 }
 
-// Run keeps a subscription to topic on the socket at sock until ctx is done.
+// Run keeps a subscription to topic on the socket at sock until ctx is done, or
+// until cliamp has been unreachable for h.GiveUpAfter when that is set. The
+// second case means the caller is orphaned: cliamp died without stopping it.
 func Run(ctx context.Context, sock, topic string, h Handlers) {
 	backoff := minBackoff
+	lastUp := time.Now()
 	for {
 		subscribed, err := stream(ctx, sock, topic, h.Data)
 		if ctx.Err() != nil {
 			return
 		}
+		if subscribed {
+			lastUp = time.Now()
+			backoff = minBackoff
+		}
 		if h.Down != nil {
 			h.Down(err)
 		}
-		if subscribed {
-			backoff = minBackoff
+		wait := backoff
+		if h.GiveUpAfter > 0 {
+			left := h.GiveUpAfter - time.Since(lastUp)
+			if left <= 0 {
+				return
+			}
+			wait = min(wait, left)
 		}
 		select {
 		case <-ctx.Done():
 			return
-		case <-time.After(backoff):
+		case <-time.After(wait):
 		}
 		backoff = min(backoff*2, maxBackoff)
 	}
