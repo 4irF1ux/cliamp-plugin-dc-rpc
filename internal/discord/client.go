@@ -40,16 +40,23 @@ type Client struct {
 	Ready json.RawMessage
 }
 
-// Activity is the subset of the Rich Presence activity used by the spike.
+// Activity is the subset of the Rich Presence activity used by the daemon.
+// Without Type 2 (Listening) Discord shows "Playing".
 type Activity struct {
+	Type       int         `json:"type"`
 	Details    string      `json:"details,omitempty"`
 	State      string      `json:"state,omitempty"`
 	Timestamps *Timestamps `json:"timestamps,omitempty"`
 }
 
-// Timestamps are unix seconds. Start makes Discord show "elapsed".
+// TypeListening is the Activity.Type for "Listening to".
+const TypeListening = 2
+
+// Timestamps are unix seconds. Start makes Discord show elapsed time; End
+// makes it show remaining time.
 type Timestamps struct {
 	Start int64 `json:"start,omitempty"`
+	End   int64 `json:"end,omitempty"`
 }
 
 // Connect finds the first available Discord IPC endpoint, performs the
