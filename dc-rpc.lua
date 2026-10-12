@@ -20,19 +20,41 @@ local DAEMON = "cliamp-rpcd"
 local RELAUNCH_DELAY = 5 -- seconds before restarting a daemon that exited
 local quitting = false
 
--- cliamp's socket lives in its config dir. The daemon gets a minimal
--- environment, so pass the dev override explicitly when it is set.
-local function daemon_args()
+-- cliamp's socket lives in its config dir. The daemon runs with a minimal
+-- environment that sets HOME, so it would pick ~/.config/cliamp on Windows,
+-- where cliamp does not listen. Compute the dir the way cliamp does (same
+-- order as cliamp's appdir) and always pass the socket path explicitly.
+local function join_path(base, name)
+    local last = base:sub(-1)
+    if last == "\\" or last == "/" then
+        return base .. name
+    end
+    local sep = base:find("\\", 1, true) and "\\" or "/"
+    return base .. sep .. name
+end
+
+local function config_dir()
     local dir = os.getenv("CLIAMP_CONFIG_DIR")
-    if dir == nil or dir == "" then
+    if dir and dir ~= "" then return dir end
+    local xdg = os.getenv("XDG_CONFIG_HOME")
+    if xdg and xdg ~= "" then return join_path(xdg, "cliamp") end
+    local home = os.getenv("HOME")
+    if home and home ~= "" then return join_path(join_path(home, ".config"), "cliamp") end
+    local appdata = os.getenv("APPDATA")
+    if appdata and appdata ~= "" then return join_path(appdata, "cliamp") end
+    local profile = os.getenv("USERPROFILE")
+    if profile and profile ~= "" then return join_path(join_path(profile, ".config"), "cliamp") end
+    return nil
+end
+
+local function daemon_args()
+    local dir = config_dir()
+    if dir == nil then
         return {}
     end
-    local last = dir:sub(-1)
-    local sep = dir:find("\\", 1, true) and "\\" or "/"
-    if last == "\\" or last == "/" then
-        sep = ""
-    end
-    return { "-sock", dir .. sep .. "cliamp.sock" }
+    local sock = join_path(dir, "cliamp.sock")
+    cliamp.log.info("cliamp socket: " .. sock)
+    return { "-sock", sock }
 end
 
 local launch
