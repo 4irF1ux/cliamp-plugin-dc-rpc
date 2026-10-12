@@ -106,7 +106,29 @@ func addAllowedBinary(path, name string) (bool, error) {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return false, err
 	}
-	return true, os.WriteFile(path, []byte(out), 0o644)
+	return true, writeFileAtomic(path, []byte(out))
+}
+
+// writeFileAtomic replaces path through a temp file in the same directory, so
+// a failed write never leaves cliamp's config truncated. Mode 0600 matches
+// what cliamp writes for config.toml.
+func writeFileAtomic(path string, data []byte) error {
+	tmp, err := os.CreateTemp(filepath.Dir(path), filepath.Base(path)+".*.tmp")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tmp.Name())
+	if _, err := tmp.Write(data); err != nil {
+		tmp.Close()
+		return err
+	}
+	if err := tmp.Close(); err != nil {
+		return err
+	}
+	if err := os.Chmod(tmp.Name(), 0o600); err != nil {
+		return err
+	}
+	return os.Rename(tmp.Name(), path)
 }
 
 func runTool(name string, args ...string) error {

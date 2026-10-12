@@ -29,6 +29,12 @@ func TestAllowBinary(t *testing.T) {
 			changed: true,
 		},
 		{
+			name:    "uppercase header is the same table as cliamp's",
+			in:      "[Plugins]\nallowed_binaries = \"yt-dlp\"\n",
+			want:    "[Plugins]\nallowed_binaries = \"yt-dlp,cliamp-rpcd\"\n",
+			changed: true,
+		},
+		{
 			name:    "already listed is unchanged",
 			in:      "[plugins]\nallowed_binaries = \"yt-dlp,cliamp-rpcd\"\n",
 			changed: false,

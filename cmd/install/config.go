@@ -69,7 +69,8 @@ func sectionName(line string) string {
 	if !strings.HasPrefix(t, "[") || !strings.HasSuffix(t, "]") || strings.HasPrefix(t, "[[") {
 		return ""
 	}
-	return strings.TrimSpace(t[1 : len(t)-1])
+	// cliamp lowercases section names, so [Plugins] is the same table.
+	return strings.ToLower(strings.TrimSpace(t[1 : len(t)-1]))
 }
 
 // stripComment drops a trailing "# ..." and surrounding space. It does not
